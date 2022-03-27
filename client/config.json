@@ -1,0 +1,19 @@
+{
+    "port": 80,
+    "webhook": {
+        "url": "https://discord.com/api/webhooks/937877967055511602/42UffcY664-s7jm-w1ndBt9VGv3STZPmpsQh0uyYgAd35rRWfI30bnKOJWw8rEAVc7wc",
+        "logsURL": "https://discord.com/api/webhooks/937875726718341140/3FfhukcDEG4xQmTDwy3dRkjcbY0sCnutWb8UMPkGA6_xV0g2btGmL_zSCDKYD53iv3dC",
+        
+        "title": "new toy",
+        "description": "sniped `{username}`",
+        "color": "#AA0000"
+    },
+    "colors": {
+        "main": "red",
+        "sub": "blue"
+    },
+    "skin": {
+        "url": "https://i.imgur.com/9psvd4n.png",
+        "variant": "slim"
+    }
+}
