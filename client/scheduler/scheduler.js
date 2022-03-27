@@ -47,6 +47,8 @@ const snipe = async (username, droptime, offset, account) => {
         }
 
         for(let i = 0; i < 2; i++) {
+            console.log(`[CLIENT] Sent @ ${moment().format('h:mm:ss.SSSS')}`)
+            log(`[CLIENT] Sent @ ${moment().format('h:mm:ss.SSSS')}`)
             let req = https.request(options, async (res) => {
                 // log time
 
@@ -59,7 +61,7 @@ const snipe = async (username, droptime, offset, account) => {
                         coloredStatusCode = chalk.green(res.statusCode)
                         await successfulSnipe(username)
                         await changeSkin(token)
-                        console.log(chalk.green(`Sucessfully sniped ${username} on ${account.email}`))
+                        console.log(chalk.green(`[CLIENT] Sucessfully sniped ${username} on ${account.email}`))
                         break;
                     case 429:
                         snipeStatus = 'Ratelimited'
@@ -69,7 +71,7 @@ const snipe = async (username, droptime, offset, account) => {
                         break;
                 }
 
-                console.log(`${coloredStatusCode}     ${moment().format('h:mm:ss.SSSS')}      ${snipeStatus}`)
+                console.log(`[CLIENT] ${coloredStatusCode}     ${moment().format('h:mm:ss.SSSS')}      ${snipeStatus}`)
                 log(`${res.statusCode} @ ${moment().format('h:mm:ss.SSSS')} | ${snipeStatus} with ${account.email}`)
             })
 
@@ -85,7 +87,7 @@ const logs = async (username, droptime, offset) => {
     const timeUntilLogSend = dropsAt - Date.now()
 
     setTimeout(async () => {
-        console.log('abc')
+        console.log(`[CLIENT -> SERVER] Logs have been sent to the main server`)
         await sendLogs(username, offset)
     }, timeUntilLogSend)
 }

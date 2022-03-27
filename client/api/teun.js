@@ -11,13 +11,15 @@ const fetchSearches = async (username) => {
 }
 
 const fetchDropTime = async (username) => {
-    const response = await axios.get(`http://api.coolkidmacho.com/droptime/${username}`).catch(err => {
-        throw err.response
+    const response = await axios.get(`https://api.star.shopping/droptime/${username}`, {headers: {
+        'User-Agent': 'Sniper'
+    }}).catch(err => {
+        throw err
     })
 
     if(response.data.error) return null
 
-    return new Date((response.data.UNIX * 1000))
+    return new Date((response.data.unix * 1000))
 }
 
 module.exports = {
