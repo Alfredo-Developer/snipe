@@ -36,33 +36,41 @@ const snipe = async (username, droptime, offset, account, proxyIndex) => {
         host: proxies[proxyIndex].split(':')[0],
         port: parseInt(proxies[proxyIndex].split(':')[1])
     }
-    console.log(`[CLIENT] Using ${proxy} for ${account.email}`)
-    log(`Using ${proxy} for ${account.email}`)
+    console.log(`[CLIENT] Using ${proxy.host} for ${account.email}`)
+    log(`Using ${proxy.host} for ${account.email}`)
+
+    const socket = new Socket('POST', 'api.minecraftservices.com', 'api.minecraftservices.com', '/minecraft/profile', {'profileName': username}, {'Authorization': `Bearer ${token}`}, proxy)
+    socket.connect(() => {
+        console.log(`[CLIENT] Established connection to Mojang API with ${account.email}`)
+        log(`Established connection to Mojang API with ${account.email}`)
+    })
 
     // schedule
     setTimeout(async () => {
         // todo: make it so we connect sockets a few seconds before and then we send the data when its time to snipe
-        const socket = new Socket('POST', 'api.minecraftservices.com', 'api.minecraftservices.com', '/minecraft/profile', {'profileName': username}, {'Authorization': `Bearer ${token}`}, proxy)
-        socket.connect()
         
         for(let i = 0; i < 2; i++) {
-            socket.send(async (data) => {
-                const status = socket.getStatusCode()
+            socket.connect(() => {
+                socket.send(async (data) => {
+                    const status = socket.getStatusCode()
 
-                let coloredStatusCode = chalk.red(status)
-                let snipeStatus = 'Fail'
-
-                if(status == 200) {
-                    snipeStatus = 'Success'
-                    coloredStatusCode = chalk.green(status)
-                    await successfulSnipe(username)
-                    await changeSkin(token)
-                    console.log(chalk.green(`[CLIENT] Sucessfully sniped ${username} on ${account.email}`))
-                }
-
-                console.log(`[CLIENT] ${coloredStatusCode}     ${moment().format('h:mm:ss.SSSS')}      ${snipeStatus}`)
-                log(`${status} @ ${moment().format('h:mm:ss.SSSS')} | ${snipeStatus} with ${account.email}`)
+                    let coloredStatusCode = chalk.red(status)
+                    let snipeStatus = 'Fail'
+    
+                    if(status == 200) {
+                        snipeStatus = 'Success'
+                        coloredStatusCode = chalk.green(status)
+                        await successfulSnipe(username)
+                        await changeSkin(token)
+                        console.log(chalk.green(`[CLIENT] Sucessfully sniped ${username} on ${account.email}`))
+                    }
+    
+                    console.log(`[CLIENT] ${coloredStatusCode}     ${moment().format('h:mm:ss.SSSS')}      ${snipeStatus}`)
+                    log(`${status} @ ${moment().format('h:mm:ss.SSSS')} | ${snipeStatus} with ${account.email}`)
+                    console.log(data.toString())          
+                })
             })
+
             console.log(`[CLIENT] Sent @ ${moment().format('h:mm:ss.SSSS')}`)
             log(`Sent @ ${moment().format('h:mm:ss.SSSS')}`)
 
