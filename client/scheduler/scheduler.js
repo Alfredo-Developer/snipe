@@ -45,7 +45,7 @@ const snipe = async (username, droptime, offset, account, proxyIndex) => {
         socket.connect()
         
         for(let i = 0; i < 2; i++) {
-            socket.send((data) => {
+            socket.send(async (data) => {
                 const status = socket.getStatusCode()
 
                 let coloredStatusCode = chalk.red(status)
