@@ -5,6 +5,7 @@ const XBoxLiveAuth = require('@xboxreplay/xboxlive-auth')
 const { log } = require('../util/logger')
 
 const authenticateAccounts = async (username, droptime, offset, accounts) => {
+    let index = 0
     const scheduler = require('../scheduler/scheduler')
 
     console.log(`[CLIENT] Attempting to authenticate ${accounts.length} accounts...`)
@@ -18,7 +19,8 @@ const authenticateAccounts = async (username, droptime, offset, accounts) => {
                 return
             }
 
-            await scheduler.snipe(username, droptime, offset, authedAccount)
+            await scheduler.snipe(username, droptime, offset, authedAccount, index)
+            index+=1
         }).catch(e => {
             console.log(`[CLIENT] Error whilst authenticating ${account}`)
             log(`Error whilst authenticating ${account}`)
