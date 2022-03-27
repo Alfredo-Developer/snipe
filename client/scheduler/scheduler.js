@@ -6,6 +6,7 @@ const { successfulSnipe } = require('../util/webhook')
 const { sendLogs, log } = require('../util/logger')
 const Socket = require('../socket')
 const changeSkin = require('../api/mojang')
+const fs = require('fs')
 const https = require('https')
 const moment = require('moment')
 
