@@ -31,12 +31,20 @@ class Socket {
   }
 
   connect(callback = function(){}) {
-    this.req = http.request({
+    const options = {
       host: this.proxy.host,
       port: this.proxy.port,
       method: 'CONNECT',
       path: `${this.host}:443`
-    })
+    }
+
+    if(this.proxy.auth) {
+      options.headers = {
+        'Proxy-Authentication': `Basic ${Buffer.from(this.proxy.auth).toString('base64')}`
+      }
+    }
+
+    this.req = http.request(options)
 
     this.req.on('connect', (res, socket, head) => {
       this.socket = socket

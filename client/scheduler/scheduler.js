@@ -32,10 +32,22 @@ const snipe = async (username, droptime, offset, account, proxyIndex) => {
 
     let token = account.token
 
-    const proxy = {
-        host: proxies[proxyIndex].split(':')[0],
-        port: parseInt(proxies[proxyIndex].split(':')[1])
+    const proxyString = proxies[proxyIndex]
+    let proxy = {}
+    
+    if(proxyString.includes('@')) {
+        const authSplit = proxyString.split('@')
+        proxy.auth = authSplit[0]
+
+        const proxySplit = authSplit.split(':')
+        proxy.host = proxySplit[0]
+        proxy.port = parseInt(proxySplit[1])
+    } else {
+        const proxySplit = proxyString.split(':')
+        proxy.host = proxySplit[0]
+        proxy.port = parseInt(proxySplit[1])
     }
+
     console.log(`[CLIENT] Using ${proxy.host} for ${account.email}`)
     log(`Using ${proxy.host} for ${account.email}`)
 
