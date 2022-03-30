@@ -1,5 +1,7 @@
 const http = require('http')
+const https = require('https')
 const tls = require('tls')
+const proxyingAgent = require('proxying-agent')
 
 class Socket {
   constructor(method, host, endpointHost, path, json, headers, proxy = {}) {
@@ -13,6 +15,7 @@ class Socket {
     this.contentType = 'application/json'
 
     this.createPayload()
+    this.agent = proxyingAgent.create('http://df315xn29bx7rpq:rmOt9UNT@152.44.97.146:8000', 'https://api.minecraftservices.com')
   }
 
   createPayload() {
@@ -30,41 +33,37 @@ class Socket {
     this.payload = payload
   }
 
-  connect(callback = function(){}) {
+  connect(connect = function(){}, dataCb = function(data){}) {
     const options = {
-      host: this.proxy.host,
-      port: this.proxy.port,
-      method: 'CONNECT',
-      path: `${this.host}:443`
+      host: 'api.minecraftservices.com',
+      port: 443,
+      agent: this.agent
     }
 
-    if(this.proxy.auth) {
-      options.headers = {
-        'Proxy-Authentication': `Basic ${Buffer.from(this.proxy.auth).toString('base64')}`
-      }
-    }
+    const req = https.request(options, res => {
+      this.res = res
 
-    this.req = http.request(options)
+      res.on('data', data => dataCb(data.toString()))
+    })
 
-    this.req.on('connect', (res, socket, head) => {
+    this.req = req
+
+    req.on('socket', socket => {
       this.socket = socket
-      this.conn = tls.connect({
-        host: this.endpointHost,
-        servername: this.host,
-        socket: this.socket,
-        rejectUnauthorized: false
-      }, () => {
-        callback(true)
-      })
+      connect()
+    })
+
+    req.on('error', err => {
+      console.error(err)
     })
   }
 
   send(callback = function(data){}) {
-    if(!this.conn || !this.payload) return
+    if(!this.socket || !this.req) return
 
-    this.conn.write(this.payload)
-    this.conn.on('data', data => {
-      this.responseData = data
+    this.socket.write(this.payload)
+
+    this.socket.on('data', data => {
       callback(data)
     })
   }
@@ -73,18 +72,26 @@ class Socket {
     this.req.end()
     callback()
   }
-
-  getStatusCode(callback = function(err){}) {
-    if(!this.responseData) {
-      callback('Data is undefined')
-      return 0
-    }
-
-    let line = this.responseData.toString().split('\n')[0]
-    let code = line.replace('HTTP/1.1 ', '').replace('OK', '')
-    callback(undefined)
-    return parseInt(code) || code
-  }
 }
+
+// const proxy = {
+//   host: '152.44.97.146',
+//   port: 8000,
+//   auth: 'df315xn29bx7rpq:rmOt9UNT'
+// }
+
+// const token = `eyJhbGciOiJIUzI1NiJ9.eyJ4dWlkIjoiMjUzNTQ1MjE5ODUyMTIwMyIsImFnZyI6IkFkdWx0Iiwic3ViIjoiM2VlYmU0MDItZDc0MS00NzQxLTk2N2UtZmNmZTBlYmZmMDIzIiwibmJmIjoxNjQ4NjA4Njg2LCJhdXRoIjoiWEJPWCIsInJvbGVzIjpbXSwiaXNzIjoiYXV0aGVudGljYXRpb24iLCJleHAiOjE2NDg2OTUwODYsImlhdCI6MTY0ODYwODY4NiwicGxhdGZvcm0iOiJVTktOT1dOIiwieXVpZCI6ImY0YjRjZjJlYjFkY2Y0YjRlZDgwYWQ0ZmFhMDRlZmM1In0.W80lnaJkZdOL3vMLzukdnyc0dddxX59Ot3dk7cL-anc`
+// const socket = new Socket('POST', 'api.minecraftservices.com', 'api.minecraftservices.com', '/minecraft/profile', {'profileName': 'test'}, {'Authorization': `Bearer ${token}`, 'Accept': 'application/json'}, proxy)
+
+// socket.connect(() => {
+//   console.log(`created socket connection`)
+//   socket.send()
+// }, data => {
+//   console.log('received data')
+//   console.log(`Status Code: ${socket.res.statusCode}`)
+//   console.log(data.toString())
+// })
+
+// socket.end()
 
 module.exports = Socket

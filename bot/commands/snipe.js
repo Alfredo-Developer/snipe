@@ -12,7 +12,7 @@ Object.defineProperty(Array.prototype, 'chunk', {
 	}
 });
 
-const CHUNK_SIZE = 5;
+const CHUNK_SIZE = 1;
 
 module.exports = {
     data: new SlashCommandBuilder()

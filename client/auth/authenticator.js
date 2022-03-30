@@ -22,7 +22,7 @@ const authenticateAccounts = async (username, droptime, offset, accounts) => {
             await scheduler.snipe(username, droptime, offset, authedAccount, index)
             index+=1
         }).catch(e => {
-            console.log(`[CLIENT] Error whilst authenticating ${account}`)
+            console.log(`[CLIENT] Error whilst authenticating ${account} | ${e}`)
             log(`Error whilst authenticating ${account}`)
         })
     }

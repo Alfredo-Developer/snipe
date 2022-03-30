@@ -32,108 +32,47 @@ const snipe = async (username, droptime, offset, account, proxyIndex) => {
 
     let token = account.token
 
-    const proxyString = proxies[proxyIndex]
-    let proxy = {}
+    const socket = new Socket('POST', 'api.minecraftservices.com', 'api.minecraftservices.com', '/minecraft/profile', {'profileName': username}, {'Authorization': `Bearer ${token}`}, {})
+    setTimeout(() => {
+        console.log(`[CLIENT] Preparing socket connection for ${account.email}`)
+        socket.connect(() => {
+            console.log(`[CLIENT] Established connection to Mojang API with ${account.email}`)
+            log(`Established connection to Mojang API with ${account.email}`)
+        }, async data => {
+            const status = socket.res.statusCode
+            let snipeStatus = 'Fail'
     
-    if(proxyString.includes('@')) {
-        const authSplit = proxyString.split('@')
-        proxy.auth = authSplit[0]
-
-        const proxySplit = authSplit.split(':')
-        proxy.host = proxySplit[0]
-        proxy.port = parseInt(proxySplit[1])
-    } else {
-        const proxySplit = proxyString.split(':')
-        proxy.host = proxySplit[0]
-        proxy.port = parseInt(proxySplit[1])
-    }
-
-    console.log(`[CLIENT] Using ${proxy.host} for ${account.email}`)
-    log(`Using ${proxy.host} for ${account.email}`)
-
-    const socket = new Socket('POST', 'api.minecraftservices.com', 'api.minecraftservices.com', '/minecraft/profile', {'profileName': username}, {'Authorization': `Bearer ${token}`}, proxy)
-    socket.connect(() => {
-        console.log(`[CLIENT] Established connection to Mojang API with ${account.email}`)
-        log(`Established connection to Mojang API with ${account.email}`)
-    })
-
-    // schedule
-    setTimeout(async () => {
-        // todo: make it so we connect sockets a few seconds before and then we send the data when its time to snipe
-        
-        for(let i = 0; i < 2; i++) {
-            socket.connect(() => {
-                socket.send(async (data) => {
-                    const status = socket.getStatusCode()
-
-                    let coloredStatusCode = chalk.red(status)
-                    let snipeStatus = 'Fail'
+            switch(status) {
+                case 200: {
+                    snipeStatus = 'Success'
+                    await successfulSnipe(username)
+                    await changeSkin(token)
+                    console.log(`[CLIENT] Sucessfully sniped ${username} on ${account.email}`)
+                    log(`Successfully sniped ${username} on ${account.email}`)
+                    break
+                }
+                case 429: {
+                    snipeStatus = 'Ratelimited'
+                }
+            }
     
-                    if(status == 200) {
-                        snipeStatus = 'Success'
-                        coloredStatusCode = chalk.green(status)
-                        await successfulSnipe(username)
-                        await changeSkin(token)
-                        console.log(chalk.green(`[CLIENT] Sucessfully sniped ${username} on ${account.email}`))
-                    }
-    
-                    console.log(`[CLIENT] ${coloredStatusCode}     ${moment().format('h:mm:ss.SSSS')}      ${snipeStatus}`)
-                    log(`${status} @ ${moment().format('h:mm:ss.SSSS')} | ${snipeStatus} with ${account.email}`)
-                    console.log(data.toString())          
-                })
-            })
+            console.log(`[CLIENT] ${status}     ${moment().format('h:mm:ss.SSSS')}      ${snipeStatus}`)
+            log(`${status} @ ${moment().format('h:mm:ss.SSSS')} | ${snipeStatus} with ${account.email}`)
+        })
+    }, timeUntilDrop - 15000)
 
-            console.log(`[CLIENT] Sent @ ${moment().format('h:mm:ss.SSSS')}`)
-            log(`Sent @ ${moment().format('h:mm:ss.SSSS')}`)
-
-            socket.end()
+    setTimeout(() => {
+        for(let i=0; i<2; i++) {
+            socket.send()
+            console.log(`[CLIENT] Sent req ${i+1} for ${account.email} @ ${moment().format('h:mm:ss.SSSS')}`)
+            log(`Sent req ${i+1} for ${account.email} @ ${moment().format('h:mm:ss.SSSS')}`)
         }
-
-        // const options = {
-        //     host: `api.minecraftservices.com`,
-        //     port: 443,
-        //     path: `/minecraft/profile`,
-        //     method: 'POST',
-        //     headers: {
-        //         'Content-Type': 'application/json',
-        //         'Content-Length': data.length,
-        //         'Authorization': `Bearer ${token}`
-        //     }
-        // }
-
-        // for(let i = 0; i < 2; i++) {
-        //     console.log(`[CLIENT] Sent @ ${moment().format('h:mm:ss.SSSS')}`)
-        //     log(`Sent @ ${moment().format('h:mm:ss.SSSS')}`)
-        //     let req = https.request(options, async (res) => {
-        //         // log time
-
-        //         let coloredStatusCode = chalk.red(res.statusCode)
-        //         let snipeStatus = 'Fail'
-
-        //         switch(res.statusCode) {
-        //             case 200:
-        //                 snipeStatus = 'Success'
-        //                 coloredStatusCode = chalk.green(res.statusCode)
-        //                 await successfulSnipe(username)
-        //                 await changeSkin(token)
-        //                 console.log(chalk.green(`[CLIENT] Sucessfully sniped ${username} on ${account.email}`))
-        //                 break;
-        //             case 429:
-        //                 snipeStatus = 'Ratelimited'
-        //                 break;
-        //             case 401:
-        //                 snipeStatus = 'Unauthorized'
-        //                 break;
-        //         }
-
-        //         console.log(`[CLIENT] ${coloredStatusCode}     ${moment().format('h:mm:ss.SSSS')}      ${snipeStatus}`)
-        //         log(`${res.statusCode} @ ${moment().format('h:mm:ss.SSSS')} | ${snipeStatus} with ${account.email}`)
-        //     })
-
-        //     req.write(data)
-        //     req.end()
-        // }
     }, timeUntilDrop)
+
+    setTimeout(() => {
+        socket.end()
+        console.log(`[CLIENT] Socket disconnected from Mojang API`)
+    }, timeUntilDrop + 15000)
 }
 
 const logs = async (username, droptime, offset) => {
