@@ -7,3 +7,5 @@ The last I thing I can recall whilst working on this sniper was adding proxy sup
 
 
 Anyone is free to use this sniper, however you cannot claim the code as your own (that's just weird if you do)
+
+ps don't even bother trying to login to the Discord bot, or sending messages to the webhooks inside of the code, they're all changed or just don't work anymore lol
